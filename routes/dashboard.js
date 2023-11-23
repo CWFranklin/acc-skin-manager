@@ -146,10 +146,18 @@ exports.skinAdd = async (req, res) => {
     let carObj
 
     try {
-        const carObj = JSON.parse(fs.readFileSync(carPath, 'utf-16le'))
+        carObj = JSON.parse(fs.readFileSync(carPath, 'utf-16le'))
     } catch (error) {
-        console.log(`Error parsing car JSON file ${carPath}`)
-        throw error
+        console.log(`Car JSON file ${carPath} is not UTF-16LE encoded. Trying UTF-8...`)
+    }
+
+    if (! carObj) {
+        try {
+            carObj = JSON.parse(fs.readFileSync(carPath, 'utf-8'))
+        } catch (error) {
+            console.log(`Car JSON file ${carPath} is not UTF-8 encoded`)
+            return res.send('Unable to parse car JSON file! Please try a different encoding. We support UTF-16LE and UTF-8.')
+        }
     }
 
     const modelType = carObj.carModelType
@@ -214,16 +222,16 @@ exports.skinRemove = async (req, res) => {
 
     try {
         const [ skin, fields ] = await conn.query('SELECT * FROM skins WHERE id = ?', [skinId])
+
+        if (skin.length === 0) {
+            return res.redirect('/dashboard?deleted=false')
+        }
+
+        if (skin[0].user_id !== userId) {
+            return res.redirect('/dashboard?deleted=false')
+        }
     } catch (error) {
         console.log(`Error fetching skin ${skinId} from DB`)
-    }
-
-    if (skin.length === 0) {
-        return res.redirect('/dashboard?deleted=false')
-    }
-
-    if (skin[0].user_id !== userId) {
-        return res.redirect('/dashboard?deleted=false')
     }
 
     try {
