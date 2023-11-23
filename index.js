@@ -2,11 +2,12 @@ require('dotenv').config()
 const express = require('express')
 const cookieParser = require('cookie-parser')
 const pug = require('pug')
+const multer  = require('multer')
 
 const connect = require('./db')
 const { adminAuth, discordAuth, userAuth } = require('./routes/auth')
 const { adminIndex, whitelistAdd, whitelistRemove } = require('./routes/admin')
-const { dashboardIndex, skinAdd, skinDownload, skinRemove } = require('./routes/dashboard')
+const { dashboardIndex, bulkSkinDownload, skinAdd, skinDownload, skinRemove } = require('./routes/dashboard')
 
 
 // Initialise DB
@@ -42,9 +43,15 @@ initDB()
 // Create server
 const PORT = process.env.PORT || 3000
 const app = express()
+const upload = multer({ dest: 'uploads/' })
 app.set('view engine', 'pug')
 app.use(cookieParser())
 app.use(express.static('public'))
+
+app.use((req, res, next) => {
+    res.locals.orgName = process.env.ORG_NAME
+    next()
+})
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`)
@@ -65,9 +72,12 @@ app.get('/auth/discord', discordAuth)
 
 app.get('/admin', adminAuth, adminIndex)
 app.post('/admin/whitelist', adminAuth, whitelistAdd)
-app.delete('/admin/whitelist', adminAuth, whitelistRemove)
+app.get('/admin/whitelist/delete', adminAuth, whitelistRemove)
 
 app.get('/dashboard', userAuth, dashboardIndex)
-app.get('/dashboard/download', userAuth, skinDownload)
-app.post('/dashboard/skin', userAuth, skinAdd)
-app.delete('/dashboard/skin', userAuth, skinRemove)
+app.get('/dashboard/download', userAuth, bulkSkinDownload)
+
+const skinUpload = upload.fields([{ name: 'car-file', maxCount: 1 }, { name: 'skin-files', maxCount: 6 }])
+app.post('/dashboard/skins', skinUpload, userAuth, skinAdd)
+app.get('/dashboard/skins/:id', userAuth, skinDownload)
+app.get('/dashboard/skins/:id/delete', userAuth, skinRemove)

@@ -18,7 +18,7 @@ exports.currentUser = (req) => {
                 if (!decodedToken.id) {
                     return null
                 } else {
-                    return decodedToken.id
+                    return decodedToken
                 }
             }
         })
@@ -97,26 +97,36 @@ exports.discordAuth = async (req, res) => {
         }
 
         const conn = await connect()
+        let token = null
 
-        const [ whitelistUsers, fields ] = await conn.execute('SELECT * FROM whitelist WHERE discord_id = ?', [user.id])
+        const [ existingUsers, fields ] = await conn.execute('SELECT * FROM users WHERE discord_id = ?', [user.id])
 
-        if (whitelistUsers.length > 0) {
-            const q = parsePlaceholders(
-                'INSERT INTO users (discord_id, username, avatar) VALUES (:id, :username, :avatar) ON DUPLICATE KEY UPDATE username = :username, avatar = :avatar',
-                { id: user.id, username: user.username, avatar: user.avatar }
-            )
-
-            await conn.execute(q[0], q[1], (err) => {
-                if (err) throw err
-                console.log(`User ${user.id} inserted successfully!`)
-            })
-
-            const token = jwt.sign(
-                { id: user.id, username: user.username, admin: process.env.ADMIN_ID === user.id },
+        if (existingUsers.length > 0) {
+            existingUser = existingUsers[0]
+            token = jwt.sign(
+                { id: user.id, userId: existingUser.id, username: user.username, admin: process.env.ADMIN_ID === user.id },
                 jwtSecret,
                 { expiresIn: jwtMaxAge }
             )
 
+            if (existingUser.username !== user.username || existingUser.avatar !== user.avatar) {
+                await conn.execute('UPDATE users SET username = ?, avatar = ? WHERE id = ?', [user.username, user.avatar, existingUser.id])
+            }
+        } else {
+            const [ whitelistUsers, fields ] = await conn.execute('SELECT * FROM whitelist WHERE discord_id = ?', [user.id])
+
+            if (whitelistUsers.length > 0) {
+                const userInsert = await conn.query('INSERT INTO users (discord_id, username, avatar) VALUES (?, ?, ?)', [ user.id, user.username, user.avatar ])
+
+                token = jwt.sign(
+                    { id: user.id, userId: userInsert.insertId, username: user.username, admin: process.env.ADMIN_ID === user.id },
+                    jwtSecret,
+                    { expiresIn: jwtMaxAge }
+                )
+            }
+        }
+
+        if (token !== null) {
             res.cookie('jwt', token, { httpOnly: true, maxAge: jwtMaxAge })
             res.redirect('/dashboard')
         } else {

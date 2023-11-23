@@ -8,7 +8,7 @@ html(lang="en")
 
         link(rel='stylesheet', href='/css/style.css')
     body
-        h1 ACC Skin Manager - Admin
+        h1 #{orgName} ACC Skin Manager - Admin
         form(action="/admin/whitelist", method="post")
             label(for="discord-id") Discord User ID
             input(type="text", name="discord-id", id="discord-id")

@@ -2,5 +2,5 @@
     "create-whitelist-table": "CREATE TABLE IF NOT EXISTS whitelist ( id INT(11) NOT NULL AUTO_INCREMENT, discord_id VARCHAR(255) NOT NULL, PRIMARY KEY (id), CONSTRAINT unique_whitelist_id UNIQUE (discord_id) )",
     "create-users-table": "CREATE TABLE IF NOT EXISTS users ( id INT(11) NOT NULL AUTO_INCREMENT, discord_id VARCHAR(255) NOT NULL, username VARCHAR(255) NOT NULL, avatar VARCHAR(255), PRIMARY KEY (id), CONSTRAINT unique_discord_id UNIQUE (discord_id) )",
     "create-cars-table": "CREATE TABLE IF NOT EXISTS cars ( id INT(11) NOT NULL AUTO_INCREMENT, name VARCHAR(255) NOT NULL, model_type INT(5) NOT NULL, PRIMARY KEY (id), CONSTRAINT unique_model_type UNIQUE (model_type) )",
-    "create-skins-table": "CREATE TABLE IF NOT EXISTS skins ( id INT(11) NOT NULL AUTO_INCREMENT, user_id INT(11) NOT NULL, car_id INT(11) NOT NULL, skin_name VARCHAR(255) NOT NULL, PRIMARY KEY (id) )"
+    "create-skins-table": "CREATE TABLE IF NOT EXISTS skins ( id INT(11) NOT NULL AUTO_INCREMENT, user_id INT(11) NOT NULL, car_id INT(11) NOT NULL, name VARCHAR(255) NOT NULL, uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (id) )"
 }

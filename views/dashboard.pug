@@ -8,6 +8,37 @@ html(lang="en")
 
         link(rel='stylesheet', href='/css/style.css')
     body
-        h1 ACC Skin Manager - Dashboard
+        h1 #{orgName} ACC Skin Manager - Dashboard
+
+        a(href="/dashboard/download") Download All #{orgName} Skins
 
         p You own #{skins.length} skins!
+        table
+            thead
+                tr
+                    th Skin
+                    th Car
+                    th
+            tbody
+                each skin in skins
+                    tr(id=skin.id)
+                        td #{skin.name}
+                        td #{skin.car_name}
+                        td
+                            a(href=`/dashboard/skins/${skin.id}`) Download
+                            a(href=`/dashboard/skins/${skin.id}/delete`) Delete
+
+        hr
+
+        h4 Upload a Skin
+        form(action="/dashboard/skins", method="post", enctype="multipart/form-data")
+            label(for="name") Skin Name
+            input(type="text", name="name", id="name")
+
+            label(for="car-file") Car JSON File
+            input(type="file", name="car-file", id="car-file", accept="application/json")
+
+            label(for="skin-files") Skin Files
+            input(type="file", name="skin-files", id="skin-files", accept="application/json, image/png", multiple)
+
+            input(type="submit", value="Upload")
