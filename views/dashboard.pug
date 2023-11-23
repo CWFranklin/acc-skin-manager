@@ -1,16 +1,28 @@
 doctype html
 html(lang="en")
     head
-        title ACC Skin Manager - Dashboard
+        title ACC Skin Manager
         link(rel="preconnect", href="https://fonts.googleapis.com")
         link(rel="preconnect", href="https://fonts.gstatic.com", crossorigin)
         link(href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap", rel="stylesheet")
 
         link(rel='stylesheet', href='/css/style.css')
     body
-        h1 #{orgName} ACC Skin Manager - Dashboard
+        h1 #{orgName} ACC Skin Manager
 
         a(href="/dashboard/download") Download All #{orgName} Skins
+
+        if uploaded !== undefined
+            if uploaded === 'true'
+                p Skin uploaded successfully!
+            else
+                p Skin upload failed!
+
+        if deleted !== undefined
+            if deleted === 'true'
+                p Skin deleted successfully!
+            else
+                p Skin deletion failed!
 
         p You own #{skins.length} skins!
         table

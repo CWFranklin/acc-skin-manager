@@ -11,7 +11,7 @@ exports.dashboardIndex = async (req, res) => {
 
     try {
         const [ skins, fields ] = await conn.query('SELECT s.id, s.name, c.name AS car_name FROM skins s LEFT JOIN cars c ON s.car_id = c.id WHERE s.user_id = ?', [userId])
-        return res.render('dashboard', { skins })
+        return res.render('dashboard', { skins, uploaded: req.query.uploaded, deleted: req.query.deleted })
     } catch (error) {
         console.log(`Error fetching skins for user ${userId} from DB`)
     }
